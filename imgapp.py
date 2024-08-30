@@ -1,5 +1,6 @@
 import os
-from flask import Flask, render_template, request, redirect, send_file
+import tempfile
+from flask import Flask, render_template, request, send_file
 from rembg import remove
 from PIL import Image
 
@@ -13,10 +14,11 @@ def index():
             input_image = Image.open(file)
             output_image = remove(input_image)
             
-            output_path = "output.png"
-            output_image.save(output_path)
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
+                output_image.save(temp_file, format='PNG')
+                temp_file_path = temp_file.name
             
-            return send_file(output_path, as_attachment=True, download_name='output.png')
+            return send_file(temp_file_path, as_attachment=True, download_name='output.png')
     
     return render_template('index.html')
 
